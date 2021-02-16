@@ -49,7 +49,9 @@ namespace LiveControlHub
 
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapAreaControllerRoute("SmartController", "SmartController", "SmartController/{controller=Home}/{action=Index}/{id?}");
                 endpoints.MapRazorPages();
+                endpoints.MapControllers();
             });
         }
     }
