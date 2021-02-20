@@ -15,6 +15,7 @@ namespace LiveControlHub.Areas.SmartController.Controllers
 
         public IActionResult TouchPosition()
         {
+            //LiveControlHub.Program.ObjectController.MoveObjectAddPosition(1, 0, 0, "Cube");
             return View();
         }
     }

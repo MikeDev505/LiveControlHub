@@ -10,4 +10,9 @@
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="5.0.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\LiveClientForBlender\LiveClientForBlender.csproj" />
+    <ProjectReference Include="..\LiveControl\LiveControl.csproj" />
+  </ItemGroup>
+
 </Project>
