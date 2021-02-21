@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace LiveClientForBlender
 {
@@ -51,6 +52,7 @@ namespace LiveClientForBlender
             {
                 var sizeToSend = messageSize - totalSended;
                 channel.Write(message, totalSended, sizeToSend);
+                //channel.Flush();
             }
         }
 

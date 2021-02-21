@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -15,8 +16,18 @@ namespace LiveControlHub.Areas.SmartController.Controllers
 
         public IActionResult TouchPosition()
         {
-            //LiveControlHub.Program.ObjectController.MoveObjectAddPosition(1, 0, 0, "Cube");
             return View();
+        }
+
+
+        public async Task<IActionResult> PositionXY(string x, string y)
+        {
+            var nfi = new NumberFormatInfo();
+            nfi.NumberDecimalSeparator = ".";
+            var dx = float.Parse(x, nfi);
+            var dy = float.Parse(y, nfi);
+            LiveControlHub.Program.ObjectController.MoveObjectAddPosition(dx, dy, 0, "Cube");
+            return Ok();
         }
     }
 }
