@@ -14,28 +14,37 @@
 <body style="width:100vw; height:90vh; background-color:lightgray">
     <div class="container">
         <div class="row my-1" style="height:30vh">
-            <div id="tpPositionXY" class="col-12 h-100" style="background-color:gray; ">
+            <div id="tpPositionXY" class="col-9 h-100" style="background-color:gray; ">
                 <div>position XY</div>
+            </div>
+            <div id="tpPositionZ" class="col-2 h-100 mx-1" style="background-color:gray; ">
+                <div>position Z</div>
             </div>
         </div>
         <div class="row my-1" style="height:10vh">
-            <div id="tpPositionZ" class="col-12 h-100" style="background-color:gray; ">
-                <div>position Z</div>
+            <div id="tpRotationX" class="col-12 h-100" style="background-color:gray; ">
+                <div>rotation X</div>
+            </div>
+        </div>
+        <div class="row my-1" style="height:10vh">
+            <div id="tpRotationY" class="col-12 h-100" style="background-color:gray;">
+                <div>rotation Y</div>
+            </div>
+        </div>
+        <div class="row my-1" style="height:10vh">
+            <div id="tpRotationZ" class="col-12 h-100" style="background-color:gray;">
+                <div>rotation Z</div>
             </div>
         </div>
 
         <div class="row my-2" style="height:30vh">
-            <div id="tpRotationXY" class="col-9 h-100" style="background-color:gray; ">
-                <div>rotation XY</div>
-            </div>
-            <div id="tpRotationZ" class="col-2 h-100 mx-1" style="background-color:gray;">
-                <div>rotation Z</div>
-            </div>
+
+
         </div>
         <div class="row my-2" style="height:10vh">
-            <div id="tpRecordRotation" class="col-2 h-100" style="background-color:gray; ">
-                <div></div>
-            </div>
+            <button id="tpRecordRotation" class="col-2 h-100">
+                rr
+            </button>
         </div>
     </div>
 
@@ -128,7 +137,7 @@
             }
 
             positionXY_move(x, y) {
-                this.connectionHub.invoke("MoveObjectPositionXYZ", x, y,0);
+                this.connectionHub.invoke("MoveObjectPositionXYZ", y, -x,0);
             }
 
             positionXY_end() { }
@@ -138,7 +147,7 @@
             }
 
             positionZ_move(x, y) {
-                this.connectionHub.invoke("MoveObjectPositionXYZ", 0, 0, -x);
+                this.connectionHub.invoke("MoveObjectPositionXYZ", 0, 0, -y);
             }
             positionZ_end() { }
         }
@@ -150,7 +159,7 @@
             }
 
             positionXY_move(x, y) {
-                this.connectionHub.invoke("RotateObjectXYZ", -y, -x, 0);
+                this.connectionHub.invoke("RotateObjectXYZ", -y, -x, 0, 0.02, "Cube");
             }
 
             positionZ_start() {
@@ -158,18 +167,24 @@
             }
 
             positionZ_move(x, y) {
-                this.connectionHub.invoke("RotateObjectXYZ", 0, 0, -y);
+                this.connectionHub.invoke("RotateObjectXYZ", 0, 0, -y, 0.02, "Cube");
             }
         }
 
         class Rotation3dPhone {
             timer;
             alpha;
+            alphaLast;
             beta;
+            betaLast;
             gamma;
+            gammaLast;
 
             constructor(connectionHub, jqPanel) {
                 this.connectionHub = connectionHub;
+                this.enableDeviceOrientation = false;
+                
+
                 var divPanel = jqPanel[0];
                 var that = this;
 
@@ -177,35 +192,64 @@
                     window.addEventListener("deviceorientation",
                         function (event) {
                             //var absolute = event.absolute;
-                            that.alpha = Number(event.alpha);
-                            that.beta = Number(event.beta);
-                            that.gamma = Number(event.gamma);
+                            var alpha = Number(event.alpha);
+                            if (alpha > 180) {
+                                alpha = alpha - 360;
+                            }
+                            that.alpha = alpha;
+                            that.beta = Number(event.beta) /4.0;
+                            that.gamma = Number(event.gamma) /4.0 ;
                         });
                 } else {
                     alert("Sorry, your browser doesn't support Device Orientation");
                 }
 
-                divPanel.addEventListener("touchstart", function (e) {
-                    that.connectionHub.invoke("SaveObjectRotation");
+                divPanel.addEventListener("click", function (e) {
+                    
+                    if (that.enableDeviceOrientation == true) {
 
-                    that.timer = setInterval(function () {
-                        that.connectionHub.invoke("RotateObjectXYZ", that.alpha, that.beta, that.gamma);
-                        var pInfo = $('#pInfoOrientation');
-                        pInfo.html(that.alpha.toFixed(2) + " " + that.beta.toFixed(2) + " " + that.gamma.toFixed(2));
+                        //wlaczam
+                        that.connectionHub.invoke("SaveObjectRotation");
+                        that.alphaLast = that.alpha;
+                        that.betaLast = that.beta;
+                        that.gammaLast = that.gamma;
 
-                    }, 100);
+                        that.timer = setInterval(function () {
+
+                            var dAplha = that.alphaLast - that.alpha;
+                            that.alphaLast = that.alpha;
+
+                            var dbeta = that.betaLast - that.beta;
+                            that.betaLast = that.beta;
+
+                            var dgamma = that.gammaLast - that.gamma;
+                            that.gammaLast = that.gamma;
+
+                            that.connectionHub.invoke("RotateObjectXYZ", dgamma, dbeta, dAplha, 0.5, "Cube");
+                            var pInfo = $('#pInfoOrientation');
+                            pInfo.html(that.alpha.toFixed(2) + " " + that.beta.toFixed(2) + " " + that.gamma.toFixed(2));
+
+                        }, 100);
+
+                    } else {
+                        //wyłączam
+                        clearInterval(that.timer);       
+                    }
+                    that.enableDeviceOrientation = !that.enableDeviceOrientation;
+
+                    
 
                 });
 
-                divPanel.addEventListener("touchend", function (e) {
-                    e.preventDefault();
-                    clearInterval(that.timer);                    
-                }, false);
+                //divPanel.addEventListener("touchend", function (e) {
+                //    e.preventDefault();
+                                 
+                //}, false);
 
-                divPanel.addEventListener("touchmove", function (e) {
-                    e.preventDefault();
+                //divPanel.addEventListener("touchmove", function (e) {
+                //    e.preventDefault();
                    
-                }, false);
+                //}, false);
             }
         }
 

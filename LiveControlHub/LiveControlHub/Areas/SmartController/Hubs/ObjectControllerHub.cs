@@ -34,15 +34,23 @@ namespace LiveControlHub.Areas.SmartController.Hubs
             objectRotation = LiveControlHub.Program.ObjectController.GetObjectRotation("Cube");
         }
 
-        public void RotateObjectXYZ(float x, float y, float z)
+        public void RotateObjectXYZ(float x, float y, float z, float scale, string objectName)
         {
-            var scale = 0.01f;
+            var sscale = 0.06f * scale;
 
-            var dx = x * scale + objectRotation.X;
-            var dy = y * scale + objectRotation.Y;
-            var dz = z * scale + objectRotation.Z;
+            var dx = x * sscale;
+            var dy = y * sscale;
+            var dz = z * sscale;
 
-            LiveControlHub.Program.ObjectController.RotateObjectSetRotation(dx, dy, dz, "Cube");
+            objectRotation.X -= dx;
+            objectRotation.Y -= dy;
+            objectRotation.Z -= dz;
+
+            var xr = objectRotation.X;
+            var yr = objectRotation.Y;
+            var zr = objectRotation.Z;
+
+           LiveControlHub.Program.ObjectController.RotateObjectSetRotation(xr, yr, zr, "Cube");
             return;
         }
     }
