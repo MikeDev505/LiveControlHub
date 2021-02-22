@@ -19,7 +19,7 @@ namespace LiveControlHub.Areas.SmartController.Hubs
 
         public void MoveObjectPositionXYZ(float x, float y, float z, string objectName)
         {
-            var scale = 0.01f;
+            var scale = 0.001f;
             
             var dx = -y * scale + objectPosition.X;
             var dy = -x * scale + objectPosition.Y;

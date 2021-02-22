@@ -32,9 +32,10 @@ namespace LiveClientForBlender
         }
 
         public Vector3 GetObjectPosition(string objectName)
-        {           
+        {
+            var objName = getName(objectName);
 
-            var script = $@"ob = bpy.data.objects['{objectName}']
+            var script = $@"{objName.getBlenderObjectScript()}
 scriptResult = repr(ob.location)";
 
             var response = server.RunScript(script);
@@ -54,7 +55,10 @@ scriptResult = repr(ob.location)";
             var sx = floatToString(x * scale);
             var sy = floatToString(y * scale);
             var sz = floatToString(z * scale);
-            var script = $@"ob = bpy.data.objects['{objectName}']
+
+            var objName = getName(objectName);
+
+            var script = $@"{objName.getBlenderObjectScript()}
 ob.location = mathutils.Vector(({sx}, {sy}, {sz}))
 scriptResult = 'ok'";
 
@@ -67,18 +71,26 @@ scriptResult = 'ok'";
             var sx = floatToString(-y * scale);
             var sy = floatToString(-x * scale);
             var sz = floatToString(z * scale);
-             var script = $@"ob = bpy.data.objects['{objectName}']
+
+            var objName = getName(objectName);
+
+            var script = $@"{objName.getBlenderObjectScript()}
 ob.location = mathutils.Vector(({sx}, {sy}, {sz}))
 scriptResult = 'ok'";
 
             var response = server.RunScript(script);
         }
 
+       
 
         public Vector3 GetObjectRotation(string objectName)
         {
-            var script = $@"ob = bpy.data.objects['{objectName}']
+            var objName = getName(objectName);
+
+            var script = $@"{objName.getBlenderObjectScript()}
 scriptResult = repr(ob.rotation_euler)";
+
+
 
             var response = server.RunScript(script);
             response = response.Replace("Euler((", "")                
@@ -98,11 +110,66 @@ scriptResult = repr(ob.rotation_euler)";
             var sx = floatToString(x * scale);
             var sy = floatToString(y * scale);
             var sz = floatToString(z * scale);
-            var script = $@"ob = bpy.data.objects['{objectName}']
+
+            var objName = getName(objectName);
+
+            var script = $@"{objName.getBlenderObjectScript()}
 ob.rotation_euler = ({sx}, {sy}, {sz})
-scriptResult = 'ok'";
+scriptResult = 'ok'";            
 
             var response = server.RunScript(script);
         }
+
+
+
+
+        #region pomocnicze
+        enum EnumObjectType { Object, Bone };
+        class NameContainer
+        {
+            public EnumObjectType Type { get; set; }
+            public string ObjectName { get; set; }
+            public string BoneName { get; set; }
+
+            public string getBlenderObjectScript()
+            {
+                var script = $@"ob = bpy.data.objects['{ObjectName}']";
+                if (Type == EnumObjectType.Bone)
+                {
+                    script = $@"ob = bpy.data.objects['{ObjectName}']
+ob = ob.pose.bones.get('{BoneName}')";
+                }
+
+                return script;
+            }
+        }
+
+        private NameContainer getName(string objectName)
+        {
+            if (objectName.StartsWith("Object___"))
+            {
+                return new NameContainer()
+                {
+                    Type = EnumObjectType.Object,
+                    ObjectName = objectName.Replace("Object___", "")
+                };
+            }
+            else if (objectName.StartsWith("Bone___"))
+            {
+                var oName = objectName.Replace("Bone___", "");
+                var names = oName.Split(new string[] { "___" }, StringSplitOptions.RemoveEmptyEntries);
+                return new NameContainer()
+                {
+                    Type = EnumObjectType.Bone,
+                    ObjectName = names[0],
+                    BoneName = names[1]
+                };
+            }
+            else
+            {
+                throw new Exception("Incorect object name: chould be 'Object___Cube' or 'Bone___ArmatureName___BonaName'");
+            }
+        }
+        #endregion
     }
 }
