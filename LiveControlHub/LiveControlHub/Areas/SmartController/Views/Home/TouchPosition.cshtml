@@ -22,26 +22,26 @@
             </div>
         </div>
         <div class="row my-1" style="height:10vh">
-            <div id="tpRotationX" class="col-12 h-100" style="background-color:gray; ">
+            <button class="col-1" onclick="viewModel.resetRotation(true, false, false)">R</button>
+            <div id="tpRotationX" class="col-11 h-100" style="background-color:gray; ">
                 <div>rotation X</div>
             </div>
         </div>
         <div class="row my-1" style="height:10vh">
-            <div id="tpRotationY" class="col-12 h-100" style="background-color:gray;">
+            <button class="col-1" onclick="viewModel.resetRotation(false, true, false)">R</button>
+            <div id="tpRotationY" class="col-11 h-100" style="background-color:gray;">
                 <div>rotation Y</div>
             </div>
         </div>
         <div class="row my-1" style="height:10vh">
-            <div id="tpRotationZ" class="col-12 h-100" style="background-color:gray;">
+            <button class="col-1" onclick="viewModel.resetRotation(false, false, true)">R</button>
+            <div id="tpRotationZ" class="col-11 h-100" style="background-color:gray;">
                 <div>rotation Z</div>
             </div>
         </div>
-
-        <div class="row my-2" style="height:30vh">
-
-
-        </div>
+        
         <div class="row my-2" style="height:10vh">
+
             <button id="tpRecordRotation" class="col-2 h-100">
                 rr
             </button>
@@ -117,8 +117,9 @@
         }
 
         class Position3dPanel {
-            constructor(connectionHub, jqPanelXY, jqPanelZ) {
+            constructor(connectionHub, jqPanelXY, jqPanelZ, objectName) {
                 this.connectionHub = connectionHub;
+                this.objectName = objectName;
                 var that = this;
                 
                 this.panelXY = new TouchPanel(jqPanelXY,
@@ -133,21 +134,21 @@
             }
 
             positionXY_start() {
-                this.connectionHub.invoke("SaveObjectPosition");
+                this.connectionHub.invoke("SaveObjectPosition", this.objectName);
             }
 
             positionXY_move(x, y) {
-                this.connectionHub.invoke("MoveObjectPositionXYZ", y, -x,0);
+                this.connectionHub.invoke("MoveObjectPositionXYZ", y, -x, 0, this.objectName);
             }
 
             positionXY_end() { }
 
             positionZ_start() {
-                this.connectionHub.invoke("SaveObjectPosition");
+                this.connectionHub.invoke("SaveObjectPosition", this.objectName);
             }
 
             positionZ_move(x, y) {
-                this.connectionHub.invoke("MoveObjectPositionXYZ", 0, 0, -y);
+                this.connectionHub.invoke("MoveObjectPositionXYZ", 0, 0, -y, this.objectName);
             }
             positionZ_end() { }
         }
@@ -155,23 +156,75 @@
         class Rotation3dPanel extends Position3dPanel {
 
             positionXY_start() {
-                this.connectionHub.invoke("SaveObjectRotation");
+                this.connectionHub.invoke("SaveObjectRotation", this.objectName);
             }
 
             positionXY_move(x, y) {
-                this.connectionHub.invoke("RotateObjectXYZ", -y, -x, 0, 0.02, "Cube");
+                this.connectionHub.invoke("RotateObjectXYZ", -y, -x, 0, 0.02, this.objectName);
             }
 
             positionZ_start() {
-                this.connectionHub.invoke("SaveObjectRotation");
+                this.connectionHub.invoke("SaveObjectRotation", this.objectName);
             }
 
             positionZ_move(x, y) {
-                this.connectionHub.invoke("RotateObjectXYZ", 0, 0, -y, 0.02, "Cube");
+                this.connectionHub.invoke("RotateObjectXYZ", 0, 0, -y, 0.02, this.objectName);
             }
         }
 
-        class Rotation3dPhone {
+        class Rotation3dPanel3 {
+            constructor(connectionHub, jqPanelX, jqPanelY, jqPanelZ, objectName) {
+                this.connectionHub = connectionHub;
+                this.objectName = objectName
+                var that = this;
+
+                this.panelX = new TouchPanel(jqPanelX,
+                    function () { that.positionX_start(); },
+                    function (x, y) { that.positionX_move(x, y); },
+                    function () { that.positionX_end(); });
+
+                this.panelY = new TouchPanel(jqPanelY,
+                    function () { that.positionY_start(); },
+                    function (x, y) { that.positionY_move(x, y); },
+                    function () { that.positionY_end(); });
+
+                this.panelZ = new TouchPanel(jqPanelZ,
+                    function () { that.positionZ_start(); },
+                    function (x, y) { that.positionZ_move(x, y); },
+                    function () { that.positionZ_end(); });
+            }
+
+            positionX_start() {
+                this.connectionHub.invoke("SaveObjectRotation", this.objectName);
+            }
+
+            positionX_move(x, y) {
+                this.connectionHub.invoke("RotateObjectXYZ", x, 0, 0, 0.02, this.objectName);
+            }
+
+            positionX_end() { }
+
+            positionY_start() {
+                this.connectionHub.invoke("SaveObjectRotation", this.objectName);
+            }
+
+            positionY_move(x, y) {
+                this.connectionHub.invoke("RotateObjectXYZ", 0, -x, 0, 0.02, this.objectName);
+            }
+
+            positionY_end() { }
+
+            positionZ_start() {
+                this.connectionHub.invoke("SaveObjectRotation", this.objectName);
+            }
+
+            positionZ_move(x, y) {
+                this.connectionHub.invoke("RotateObjectXYZ", 0, 0, -x, 0.02, this.objectName);
+            }
+            positionZ_end() { }
+        }
+
+        class Rotation3dDevice {
             timer;
             alpha;
             alphaLast;
@@ -180,11 +233,11 @@
             gamma;
             gammaLast;
 
-            constructor(connectionHub, jqPanel) {
+            constructor(connectionHub, jqPanel, objectName) {
                 this.connectionHub = connectionHub;
+                this.objectName = objectName;
                 this.enableDeviceOrientation = false;
                 
-
                 var divPanel = jqPanel[0];
                 var that = this;
 
@@ -209,7 +262,7 @@
                     if (that.enableDeviceOrientation == true) {
 
                         //wlaczam
-                        that.connectionHub.invoke("SaveObjectRotation");
+                        that.connectionHub.invoke("SaveObjectRotation", that.objectName);
                         that.alphaLast = that.alpha;
                         that.betaLast = that.beta;
                         that.gammaLast = that.gamma;
@@ -225,7 +278,7 @@
                             var dgamma = that.gammaLast - that.gamma;
                             that.gammaLast = that.gamma;
 
-                            that.connectionHub.invoke("RotateObjectXYZ", dgamma, dbeta, dAplha, 0.5, "Cube");
+                            that.connectionHub.invoke("RotateObjectXYZ", dgamma, -dbeta, dAplha, 0.5, that.objectName);
                             var pInfo = $('#pInfoOrientation');
                             pInfo.html(that.alpha.toFixed(2) + " " + that.beta.toFixed(2) + " " + that.gamma.toFixed(2));
 
@@ -253,41 +306,33 @@
             }
         }
 
-        var connection = new signalR.HubConnectionBuilder()
-            .withUrl('/shapeHub')
-            .build();
+        
+        class ControllerViewModel {
+            constructor() {
+                this.activeObjectName = "Cube"; //"Object__Cube" "Bone__ArmatureName__BonaName
+                this.connection = new signalR.HubConnectionBuilder()
+                    .withUrl('/shapeHub')
+                    .build();
+                this.connection.start();
 
-        connection.start();
+                //var panel = new TouchPanel($('#tpPosition'));
+                this.panel = new Position3dPanel(this.connection,
+                    $('#tpPositionXY'), $('#tpPositionZ'), this.activeObjectName);
+                this.rotation = new Rotation3dPanel3(this.connection,
+                    $('#tpRotationX'), $('#tpRotationY'), $('#tpRotationZ'), this.activeObjectName);
+                this.rr = new Rotation3dDevice(this.connection, $('#tpRecordRotation'), this.activeObjectName);
+            }                        
 
-
-        //var panel = new TouchPanel($('#tpPosition'));
-        var panel = new Position3dPanel(connection, $('#tpPositionXY'), $('#tpPositionZ'));
-        var rotation = new Rotation3dPanel(connection, $('#tpRotationXY'), $('#tpRotationZ'))
-        var rr = new Rotation3dPhone(connection, $('#tpRecordRotation'));
-
-        function positionXYHandler(x, y) {
-            //$.post("PositionXY", { x: x, y: y });
-            //alert("test " + x  + " "+ y);
-
-
+            resetRotation(x, y, z) {                
+                this.connection.invoke('ResetObjectRotation', x, y, z, this.activeObjectName)
+            }
         }
 
-
-
+        var viewModel = new ControllerViewModel();      
         
 
 
-        //var lockFunction = window.screen.orientation.lock;
-        //if (lockFunction.call(window.screen.orientation, 'landscape')) {
-        //    console.log('Orientation locked')
-        //} else {
-        //    console.error('There was a problem in locking the orientation')
-        //}
-
-        //init();
-
         
-            //alert('tzzz');
     </script>
 </body>
 </html>

@@ -12,26 +12,45 @@ namespace LiveControlHub.Areas.SmartController.Hubs
     {
         private static Vector3 objectPosition = new Vector3();
         private static Vector3 objectRotation = new Vector3();
-        public void SaveObjectPosition()
+        public void SaveObjectPosition(string objectName)
         {
-            objectPosition = LiveControlHub.Program.ObjectController.GetObjectPosition("Cube");
+            objectPosition = LiveControlHub.Program.ObjectController.GetObjectPosition(objectName);
         }
 
-        public void MoveObjectPositionXYZ(float x, float y, float z)
+        public void MoveObjectPositionXYZ(float x, float y, float z, string objectName)
         {
-            var scale = 0.1f;
+            var scale = 0.01f;
             
             var dx = -y * scale + objectPosition.X;
             var dy = -x * scale + objectPosition.Y;
             var dz = z * scale + objectPosition.Z;
 
-            LiveControlHub.Program.ObjectController.MoveObjectSetPosition(dx, dy, dz, "Cube");
+            LiveControlHub.Program.ObjectController.MoveObjectSetPosition(dx, dy, dz, objectName);
             return;
         }
 
-        public void SaveObjectRotation()
+        public void ResetObjectRotation(bool x, bool y, bool z, string objectName)
         {
-            objectRotation = LiveControlHub.Program.ObjectController.GetObjectRotation("Cube");
+            var r = LiveControlHub.Program.ObjectController.GetObjectRotation(objectName);
+
+            if(x)
+            {
+                LiveControlHub.Program.ObjectController.RotateObjectSetRotation(0, r.Y, r.Z, objectName);
+            }
+
+            if (y)
+            {
+                LiveControlHub.Program.ObjectController.RotateObjectSetRotation(r.X, 0, r.Z, objectName);
+            }
+
+            if (z)
+            {
+                LiveControlHub.Program.ObjectController.RotateObjectSetRotation(r.X, r.Y, 0, objectName);
+            }
+        }
+        public void SaveObjectRotation(string objectName)
+        {
+            objectRotation = LiveControlHub.Program.ObjectController.GetObjectRotation(objectName);
         }
 
         public void RotateObjectXYZ(float x, float y, float z, float scale, string objectName)
@@ -50,7 +69,7 @@ namespace LiveControlHub.Areas.SmartController.Hubs
             var yr = objectRotation.Y;
             var zr = objectRotation.Z;
 
-           LiveControlHub.Program.ObjectController.RotateObjectSetRotation(xr, yr, zr, "Cube");
+           LiveControlHub.Program.ObjectController.RotateObjectSetRotation(xr, yr, zr, objectName);
             return;
         }
     }
