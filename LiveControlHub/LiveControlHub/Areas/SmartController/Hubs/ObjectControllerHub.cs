@@ -19,7 +19,7 @@ namespace LiveControlHub.Areas.SmartController.Hubs
 
         public void MoveObjectPositionXYZ(float x, float y, float z, string objectName)
         {
-            var scale = 0.001f;
+            var scale = 0.1f;
             
             var dx = -y * scale + objectPosition.X;
             var dy = -x * scale + objectPosition.Y;
@@ -55,7 +55,7 @@ namespace LiveControlHub.Areas.SmartController.Hubs
 
         public void RotateObjectXYZ(float x, float y, float z, float scale, string objectName)
         {
-            var sscale = 0.06f * scale;
+            var sscale = 0.1f * scale;
 
             var dx = x * sscale;
             var dy = y * sscale;

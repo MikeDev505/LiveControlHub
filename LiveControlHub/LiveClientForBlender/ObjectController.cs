@@ -38,6 +38,16 @@ namespace LiveClientForBlender
             var script = $@"{objName.getBlenderObjectScript()}
 scriptResult = repr(ob.location)";
 
+            if(objName.Type == EnumObjectType.Bone)
+            {
+                script = $@"{objName.getBlenderObjectScript()}
+mw = obj.convert_space(pose_bone=pb, 
+            matrix=pb.matrix, 
+            from_space='POSE', 
+            to_space='WORLD')
+scriptResult = repr(mw.translation)";
+            }
+
             var response = server.RunScript(script);
             response = response.Replace("Vector((", "").Replace("))", "");
             var sv = response.Split(',');
@@ -61,6 +71,22 @@ scriptResult = repr(ob.location)";
             var script = $@"{objName.getBlenderObjectScript()}
 ob.location = mathutils.Vector(({sx}, {sy}, {sz}))
 scriptResult = 'ok'";
+
+            if (objName.Type == EnumObjectType.Bone)
+            {
+                script = $@"{objName.getBlenderObjectScript()}
+mw = obj.convert_space(pose_bone=pb, 
+            matrix=pb.matrix, 
+            from_space='POSE', 
+            to_space='WORLD')
+mw.translation = ({sx}, {sy}, {sz})
+
+pb.matrix = obj.convert_space(pose_bone=pb, 
+        matrix=mw, 
+        from_space='WORLD', 
+        to_space='POSE')
+scriptResult = 'ok'";
+            }
 
             var response = server.RunScript(script);
         }
@@ -133,11 +159,13 @@ scriptResult = 'ok'";
 
             public string getBlenderObjectScript()
             {
-                var script = $@"ob = bpy.data.objects['{ObjectName}']";
+                var script = $@"obj = bpy.data.objects['{ObjectName}']
+ob=obj";
                 if (Type == EnumObjectType.Bone)
                 {
-                    script = $@"ob = bpy.data.objects['{ObjectName}']
-ob = ob.pose.bones.get('{BoneName}')";
+                    script = $@"obj = bpy.data.objects['{ObjectName}']
+pb = obj.pose.bones.get('{BoneName}')
+ob = pb";
                 }
 
                 return script;
