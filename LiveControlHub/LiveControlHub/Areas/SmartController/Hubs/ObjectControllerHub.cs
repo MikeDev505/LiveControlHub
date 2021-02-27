@@ -12,6 +12,12 @@ namespace LiveControlHub.Areas.SmartController.Hubs
     {
         private static Vector3 objectPosition = new Vector3();
         private static Vector3 objectRotation = new Vector3();
+
+        public void ExecuteCommand(string command)
+        {
+            LiveControlHub.Program.ObjectController.ExecuteCommand(command);
+        }
+
         public void SaveObjectPosition(string objectName)
         {
             objectPosition = LiveControlHub.Program.ObjectController.GetObjectPosition(objectName);

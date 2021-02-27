@@ -31,6 +31,13 @@ namespace LiveClientForBlender
             return v.ToString(nfi);
         }
 
+        public void ExecuteCommand(string command)
+        {
+            var script = $@"{command}
+scriptResult = 'ok'";
+            var response = server.RunScript(script);
+        }
+
         public Vector3 GetObjectPosition(string objectName)
         {
             var objName = getName(objectName);

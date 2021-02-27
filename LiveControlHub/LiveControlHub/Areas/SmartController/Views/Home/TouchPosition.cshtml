@@ -12,7 +12,47 @@
     <title>Hello, world!</title>
 </head>
 <body style="width:100vw; height:90vh; background-color:lightgray">
-    <div class="container">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-9">                
+                <div class="row" style="height:10vh">
+                    <button id="bHandR" class="col-3 h-100" onclick="setActiveBone('hand_ik.R');">
+                        Hand.R
+                    </button>
+                    <button id="bHandL" class="col-3 h-100" onclick="setActiveBone('hand_ik.L');">
+                        Hand.L
+                    </button>
+                    <button id="bHead" class="col-3 h-100" onclick="setActiveBone('head');">
+                        Head
+                    </button>
+                    <button id="tpRecordRotation" class="col-3 h-100">
+                        rr
+                    </button>
+                </div>
+                <div class="row" style="height:10vh">
+                    <button id="bFootR" class="col-3 h-100" onclick="setActiveBone('foot_ik.R');">
+                        Foot.R
+                    </button>
+                    <button id="bFootL" class="col-3 h-100" onclick="setActiveBone('foot_ik.L');">
+                        Foot.L
+                    </button>
+                    <button id="bTorso" class="col-3 h-100" onclick="setActiveBone('torso');">
+                        Torso
+                    </button>
+                </div>                
+            </div>
+            <div class="col-3">
+                <div class="row h-100">
+                    <div id="tpHand" class="col-12 h-100 mx-1" style="background-color:gray; ">
+                        <div>hand</div>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+
+        
+
         <div class="row my-1" style="height:30vh">
             <div id="tpPositionXY" class="col-9 h-100" style="background-color:gray; ">
                 <div>position XY</div>
@@ -39,13 +79,8 @@
                 <div>rotation Z</div>
             </div>
         </div>
-        
-        <div class="row my-2" style="height:10vh">
 
-            <button id="tpRecordRotation" class="col-2 h-100">
-                rr
-            </button>
-        </div>
+
     </div>
 
     <div class="container">
@@ -68,6 +103,18 @@
 
 
     <script>
+
+        class rString {
+            constructor(val) {
+                this.val = val;
+            }
+
+            setVal(val) {
+                this.val = val;
+            }
+        }
+
+
         class TouchPanel {
             constructor(jqueryDivPanel, startHandler, moveHandler, endHandler) {                
                 var divPanel = jqueryDivPanel[0];
@@ -134,21 +181,23 @@
             }
 
             positionXY_start() {
-                this.connectionHub.invoke("SaveObjectPosition", this.objectName);
+                this.connectionHub.invoke("ExecuteCommand", `rigifyControler.save_bone_position('${this.objectName.val}')`);
             }
 
             positionXY_move(x, y) {
-                this.connectionHub.invoke("MoveObjectPositionXYZ", y, -x, 0, this.objectName);
+                var s = 0.1;
+                this.connectionHub.invoke("ExecuteCommand", `rigifyControler.add_bone_position('${this.objectName.val}', (${x*s},${-y*s},0))`);
             }
 
             positionXY_end() { }
 
             positionZ_start() {
-                this.connectionHub.invoke("SaveObjectPosition", this.objectName);
+                this.connectionHub.invoke("ExecuteCommand", `rigifyControler.save_bone_position('${this.objectName.val}')`);
             }
 
             positionZ_move(x, y) {
-                this.connectionHub.invoke("MoveObjectPositionXYZ", 0, 0, -y, this.objectName);
+                var s = 0.1;
+                this.connectionHub.invoke("ExecuteCommand", `rigifyControler.add_bone_position('${this.objectName.val}', (0,0,${-y*s}))`);
             }
             positionZ_end() { }
         }
@@ -156,19 +205,21 @@
         class Rotation3dPanel extends Position3dPanel {
 
             positionXY_start() {
-                this.connectionHub.invoke("SaveObjectRotation", this.objectName);
+                this.connectionHub.invoke("ExecuteCommand", `rigifyControler.save_bone_rotation('${this.objectName.val}')`);
             }
 
             positionXY_move(x, y) {
-                this.connectionHub.invoke("RotateObjectXYZ", -y, -x, 0, 0.02, this.objectName);
+                var s = 0.02;
+                this.connectionHub.invoke("ExecuteCommand", `rigifyControler.add_bone_rotation('${this.objectName.val}',(${-y*s},${-x*s},0))`);
             }
 
             positionZ_start() {
-                this.connectionHub.invoke("SaveObjectRotation", this.objectName);
+                this.connectionHub.invoke("ExecuteCommand", `rigifyControler.save_bone_rotation('${this.objectName.val}')`);
             }
 
             positionZ_move(x, y) {
-                this.connectionHub.invoke("RotateObjectXYZ", 0, 0, -y, 0.02, this.objectName);
+                var s = 0.02;
+                this.connectionHub.invoke("ExecuteCommand", `rigifyControler.add_bone_rotation('${this.objectName.val}',(0,0,${-y * s}))`);
             }
         }
 
@@ -195,31 +246,34 @@
             }
 
             positionX_start() {
-                this.connectionHub.invoke("SaveObjectRotation", this.objectName);
+                this.connectionHub.invoke("ExecuteCommand", `rigifyControler.save_bone_rotation('${this.objectName.val}')`);
             }
 
             positionX_move(x, y) {
-                this.connectionHub.invoke("RotateObjectXYZ", x, 0, 0, 0.02, this.objectName);
+                var s = 0.02;
+                this.connectionHub.invoke("ExecuteCommand", `rigifyControler.add_bone_rotation('${this.objectName.val}',(${x*s},0,0))`);
             }
 
             positionX_end() { }
 
             positionY_start() {
-                this.connectionHub.invoke("SaveObjectRotation", this.objectName);
+                this.connectionHub.invoke("ExecuteCommand", `rigifyControler.save_bone_rotation('${this.objectName.val}')`);
             }
 
             positionY_move(x, y) {
-                this.connectionHub.invoke("RotateObjectXYZ", 0, -x, 0, 0.02, this.objectName);
+                var s = 0.02;
+                this.connectionHub.invoke("ExecuteCommand", `rigifyControler.add_bone_rotation('${this.objectName.val}',(0,${-x * s},0))`);
             }
 
             positionY_end() { }
 
             positionZ_start() {
-                this.connectionHub.invoke("SaveObjectRotation", this.objectName);
+                this.connectionHub.invoke("ExecuteCommand", `rigifyControler.save_bone_rotation('${this.objectName.val}')`);
             }
 
             positionZ_move(x, y) {
-                this.connectionHub.invoke("RotateObjectXYZ", 0, 0, -x, 0.02, this.objectName);
+                var s = 0.02;
+                this.connectionHub.invoke("ExecuteCommand", `rigifyControler.add_bone_rotation('${this.objectName.val}',(0,0,${-x * s}))`);
             }
             positionZ_end() { }
         }
@@ -262,7 +316,7 @@
                     if (that.enableDeviceOrientation == true) {
 
                         //wlaczam
-                        that.connectionHub.invoke("SaveObjectRotation", that.objectName);
+                        that.connectionHub.invoke("SaveObjectRotation", that.objectName.val);
                         that.alphaLast = that.alpha;
                         that.betaLast = that.beta;
                         that.gammaLast = that.gamma;
@@ -278,7 +332,7 @@
                             var dgamma = that.gammaLast - that.gamma;
                             that.gammaLast = that.gamma;
 
-                            that.connectionHub.invoke("RotateObjectXYZ", dgamma, -dbeta, dAplha, 0.5, that.objectName);
+                            that.connectionHub.invoke("RotateObjectXYZ", dgamma, -dbeta, dAplha, 0.5, that.objectName.val);
                             var pInfo = $('#pInfoOrientation');
                             pInfo.html(that.alpha.toFixed(2) + " " + that.beta.toFixed(2) + " " + that.gamma.toFixed(2));
 
@@ -309,28 +363,43 @@
         
         class ControllerViewModel {
             constructor() {
-                this.activeObjectName = "Bone___rig___hand_ik.L";//"Object___ik_hand_l";//"Bone___root___hand_l_ik"; //"Object___Cube" "Bone___ArmatureName___BonaName
+                this.activeObjectName = new rString("head");//"Object___ik_hand_l";//"Bone___root___hand_l_ik"; //"Object___Cube" "Bone___ArmatureName___BonaName
                 this.connection = new signalR.HubConnectionBuilder()
                     .withUrl('/shapeHub')
                     .build();
                 this.connection.start();
+                var that = this;
 
-                //var panel = new TouchPanel($('#tpPosition'));
                 this.panel = new Position3dPanel(this.connection,
                     $('#tpPositionXY'), $('#tpPositionZ'), this.activeObjectName);
                 this.rotation = new Rotation3dPanel3(this.connection,
                     $('#tpRotationX'), $('#tpRotationY'), $('#tpRotationZ'), this.activeObjectName);
+                this.handPanel = new TouchPanel($('#tpHand'),
+                    function () { that.hand_start(); },
+                    function (x, y) { that.hand_move(x, y); },
+                    function () { that.hand_end(); });
                 this.rr = new Rotation3dDevice(this.connection, $('#tpRecordRotation'), this.activeObjectName);
-            }                        
-
-            resetRotation(x, y, z) {                
-                this.connection.invoke('ResetObjectRotation', x, y, z, this.activeObjectName)
             }
+
+            hand_start() {
+            }
+
+            hand_move(x, y) {
+                var s = 0.015;
+                if (this.activeObjectName.val == "hand_ik.L") {
+                    this.connection.invoke("ExecuteCommand", `rigifyControler.hand_l(${-y*s},${x*s})`);
+                } else if (this.activeObjectName.val == "hand_ik.R") {
+                    this.connection.invoke("ExecuteCommand", `rigifyControler.hand_r(${-y * s},${x * s})`);
+                }
+            }
+            hand_end() { }
         }
-
-        var viewModel = new ControllerViewModel();      
         
+        var viewModel = new ControllerViewModel();     
 
+        function setActiveBone(boneName) {            
+            viewModel.activeObjectName.setVal(boneName);
+        }
 
         
     </script>
