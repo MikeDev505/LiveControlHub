@@ -16,29 +16,30 @@
         <div class="row">
             <div class="col-9">                
                 <div class="row" style="height:10vh">
-                    <button id="bHandR" class="col-3 h-100" onclick="setActiveBone('hand_ik.R');">
+                    <button id="bHandR" class="col-3 h-100" onclick="viewModel.setActiveBone('hand_ik.R');">
                         Hand.R
                     </button>
-                    <button id="bHandL" class="col-3 h-100" onclick="setActiveBone('hand_ik.L');">
+                    <button id="bHandL" class="col-3 h-100" onclick="viewModel.setActiveBone('hand_ik.L');">
                         Hand.L
                     </button>
-                    <button id="bHead" class="col-3 h-100" onclick="setActiveBone('head');">
+                    <button id="bHead" class="col-3 h-100" onclick="viewModel.setActiveBone('head');">
                         Head
                     </button>
                     <button id="tpRecordRotation" class="col-3 h-100">
-                        rr
+                        dev.or.
                     </button>
                 </div>
                 <div class="row" style="height:10vh">
-                    <button id="bFootR" class="col-3 h-100" onclick="setActiveBone('foot_ik.R');">
+                    <button id="bFootR" class="col-3 h-100" onclick="viewModel.setActiveBone('foot_ik.R');">
                         Foot.R
                     </button>
-                    <button id="bFootL" class="col-3 h-100" onclick="setActiveBone('foot_ik.L');">
+                    <button id="bFootL" class="col-3 h-100" onclick="viewModel.setActiveBone('foot_ik.L');">
                         Foot.L
                     </button>
-                    <button id="bTorso" class="col-3 h-100" onclick="setActiveBone('torso');">
+                    <button id="bTorso" class="col-3 h-100" onclick="viewModel.setActiveBone('torso');">
                         Torso
                     </button>
+                    
                 </div>                
             </div>
             <div class="col-3">
@@ -80,6 +81,24 @@
             </div>
         </div>
 
+        <div class="row">
+            <button class="col" onclick="viewModel.keyframeHome()">
+                |<
+            </button>
+            <button class="col" onclick="viewModel.keyframeDec()">
+                <
+            </button>
+            <button class="col" onclick="viewModel.toggleRecord()">
+                R
+            </button>
+            <button class="col" onclick="viewModel.keyframeInc()">
+                >
+            </button>
+            <button class="col" onclick="viewModel.keyframeEnd()">
+                >|
+            </button>
+        </div>
+
 
     </div>
 
@@ -113,7 +132,6 @@
                 this.val = val;
             }
         }
-
 
         class TouchPanel {
             constructor(jqueryDivPanel, startHandler, moveHandler, endHandler) {                
@@ -393,13 +411,39 @@
                 }
             }
             hand_end() { }
+
+            toggleRecord() {
+                this.connection.invoke("ExecuteCommand", `rigifyControler.toggle_record()`);
+            }
+
+            resetRotation(x, y, z) {
+                this.connection.invoke("ExecuteCommand", `rigifyControler.reset_bone_rotation('${this.activeObjectName.val}', ${x ? "True" : "False"}, ${y ? "True" : "False"}, ${z ? "True" : "False"})`);
+            }
+
+            setActiveBone(boneName) {
+                this.activeObjectName.setVal(boneName);
+            }
+
+            keyframeHome() {
+                this.connection.invoke("ExecuteCommand", `bpy.context.scene.frame_current = bpy.context.scene.frame_start`);
+            }
+
+            keyframeInc() {
+                this.connection.invoke("ExecuteCommand", `rigifyControler.inc_frame()`);
+            }
+
+            keyframeDec() {
+                this.connection.invoke("ExecuteCommand", `rigifyControler.dec_frame()`);
+            }
+
+            keyframeEnd() {
+                this.connection.invoke("ExecuteCommand", `bpy.context.scene.frame_current = bpy.context.scene.frame_end`);
+            }
         }
         
         var viewModel = new ControllerViewModel();     
 
-        function setActiveBone(boneName) {            
-            viewModel.activeObjectName.setVal(boneName);
-        }
+        
 
         
     </script>
